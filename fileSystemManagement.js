@@ -1,332 +1,387 @@
-/** This program is responsible for perform CRUD operations on the folder,
- * file and text in the files present
- * files is equivalent to Tabble 
- * Here records is equivalent to lines in the files
- */
+// /** This program is responsible for perform CRUD operations on the folder,
+//  * file and text in the files present
+//  * files is equivalent to Tabble 
+//  * Here records is equivalent to lines in the files
+//  */
 
-// requrire the fs moduleand directory path 
+
+// requrire the fs module
 const fs = require('fs');
-
+const path = require('path');
 
 //To implement the CRUD operation on the folder system system
 /**1)C- Creating an folder(directory) using the path specified
  * @param {path} folderPath It take the Specific Path
+ * @param {Function} callback It takes input as callback function
  */
-function createFolder(folderPath1){
-// try and catch for error detection
-  try {
-    //checking if the folder exist at specified path
-    if (!fs.existsSync(folderPath1)) {
-      fs.mkdirSync(folderPath1);
-      console.log('Folder created\n');
-    }
-    else {
-      console.log('Already exists\n');
-    }
-  } // throwing error
-  catch (err) {
-    console.error('Error creating folder:\n');
-  }
-}
-
-// folderPath1='.\\folder5'
-// createFolder(folderPath1)
-
-
-//2) R- Read an Folder content with the path specfied
-function readFolder(folderPath1){
-
-  let file;
-  //specifying the folder Path
-  fs.readdir(folderPath1,'utf-8',function(err,file)
-  {
-      if(err){
-      console.log("error occurred while reading the folder",err)
-      return;
+function createFolder(folderPath, callback) {
+  // Checking if the folder exists at the specified path
+  fs.access(folderPath, (err) => {
+      if (err) {
+          // If the folder doesn't exist, create it
+          fs.mkdir(folderPath, (err) => {
+              if (err) {
+                  callback('Error creating folder: ' + err);
+              } else {
+                  callback(null, 'Folder created');
+              }
+          });
+      } else {
+          callback(null, 'Folder already exists');
       }
-
-      console.log("File in the folder are :");
-      file.forEach(file =>{
-          console.log(file)
-      })
-  })
+  });
 }
 
-// folderPath1='.\\folder5'
-// readFolder(folderPath1)
+let folderPath='.\\folder5'
+createFolder(folderPath, (err,message) => {
+  if (err) {
+      console.error(err);
+  }
+  else
+  {
+    console.log(message)
+  }
+});
+
+
+
+/**2) R- Read an Folder content with the path specfied
+ * @param {path} folderPath It takes input the folder path
+ * @param {function} callback It takes callback function as parameter
+*/
+function readFolder(folderPath, callback) {
+  fs.readdir(folderPath, 'utf-8', (err, files) => {
+      if (err) {
+          // If an error occurs, pass the error to the callback
+          callback(err, null);
+      } else {
+          // If successful, pass the files to the callback
+          callback(null, files);
+      }
+  });
+}
+
+setting the path
+folderPath1='.\\folder5'
+readFolder(folderPath1, (err, files) => {
+  if (err) {
+      console.error("An error occurred while reading the folder:", err);
+  } else {
+      console.log("Files in the folder:");
+      files.forEach(file => {
+          console.log(file);
+      });
+  }
+});
+
 
 
 
 /**3) Update the Folder name
  * @param {path} folderPath1 It passes the path of folder 1
  * @param {path} folderPath2 It passes the path of folder 2
+ * @param {callback} callback t takes callback function as parameter
  */
-function updateFolder(folderPath1,folderPath2){
-    try {
-      fs.renameSync(folderPath1,folderPath2);
-      console.log('Successfully Updated \n')
-    } catch (err) {
-      console.log('error occured',err);
-    }
+
+function updateFolder(folderPath1, folderPath2, callback) {
+  fs.rename(folderPath1, folderPath2, function(err) {
+      if (err) {
+          callback(err); // Pass error to the callback
+      } else {
+          callback(null); // Pass null to indicate success
+      }
+  });
 }
 
-// const folderPath1 = 'c:\\Desktop\\aspire\\folder5';
-// const folderPath2 = 'c:\\Desktop\\aspire\\folder6';
-// updateFolder(folderPath1,folderPath2)
+const folderPath1 = '.\\folder5';
+const folderPath2 = '.\\folder6';
+updateFolder(folderPath1, folderPath2, function(err) {
+  if (err) {
+      console.log('Error occurred:', err);
+  } else {
+      console.log('Successfully updated');
+  }
+});
 
 
 
 /**4) Delete the folder with namw
- * @param {path} folderPath2 takes the path of first folder
+ * @param {path} folderPath takes the path of first folder
+ * @param {callback} callback It takes callback function as parameter 
  */
-function deleteFolder(folderPath2){
-    fs.rmdir(folderPath2, err => {
+function deleteFolder(folderPath, callback) {
+  fs.rmdir(folderPath, (err) => {
       if (err) {
-        throw err;
+        //if error occurs
+          console.log('Error occurred:', err);
+          callback(err);
+      } else {
+          console.log(`${folderPath} is deleted!`);
+          callback(null);
       }
-      console.log(`${folderPath2} is deleted!`);
-    });
+  });
 }
 
-// const folderPath2 = 'c:\\Desktop\\aspire\\folder6';
-// deleteFolder(folderPath2)
+const folderPath = '.\\folder6';
+calling the delete folder function and including the callback function
+deleteFolder(folderPath, (err)=> {
+  if (err) {
+      console.error('Error occurred during folder deletion:', err);
+  } else {
+      console.log(`${folderPath} has been successfully deleted.`);
+  }
+});
 
 
 
 
-// //To perform CRUD operation on files system
+//To perform CRUD operation on files system
 
 /**1)C- Create and write a file using
  * @param {path} filePath It takes the filepath as input
+ * @param {function} callback It takes callback function as parameter
  */
-function writeFile(filePath){
-  fs.writeFile(filePath, 'abc', (err) => {
-    if (err) {
-        console.error("Error creating the file:", err);
-        return;
-    }
-    console.log("File created successfully.");
-  });
-}
-const filePath='.\\file.txt';
-writeFile(filePath)
-
-
-/**2)Reading the file
- * @param {path} filePath It takes the filepath as input
- */
-function readFile(filePath){
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log(data);
-  });
-}
-
-// const filePath='.\\file.txt';
-// readFile(filePath)
-
-
-
-/**3) Update a file which is same as update a line
- * @param {path} filePath It is used to give file path
- * @param {object} searchObject the search object that needs to be search
- * @param {object} changeObject change made 
- */
-function updateLine(filePath, searchObject, newContentObject) {
-    fs.readFile(filePath, 'utf8', (err, data) => {
+function writeFile(filePath, callback) {
+    fs.writeFile(filePath, 'abc', function(err) {
         if (err) {
-            console.error('Error reading file:', err);
-            return;
+            console.error("Error creating the file:", err);
+            callback(err);
+        } else {
+            console.log("File created successfully.");
+            callback(null);
         }
-
-        // Split the file content into lines
-        const lines = data.split('\n');
-
-        // Find the index of the line containing the searchObject
-        const lineIndex = lines.findIndex(line => {
-            try {
-                const lineObject = JSON.parse(line);
-                return JSON.stringify(lineObject) === JSON.stringify(searchObject);
-            } catch (error) {
-                return false;
-            }
-        });
-
-        if (lineIndex === -1) {
-            console.error('Search object not found in the file.');
-            return;
-        }
-
-        // Update the content of the found line
-        lines[lineIndex] = JSON.stringify(newContentObject);
-
-        // Join the lines back together
-        const updatedContent = lines.join('\n');
-
-        // Write the updated content back to the file
-        fs.writeFile(filePath, updatedContent, (err) => {
-            if (err) {
-                console.error('Error writing file:', err);
-                return;
-            }
-            console.log('Line updated successfully.');
-        });
     });
 }
 
-// Example usage:
-// const filePath = '.\\file.txt';
-// const searchObject = { innovapptive:1536}; // Object to search for in the file
-// const newContentObject = { google : 1554  }; // New content for the line
 
-// updateLine(filePath, searchObject, newContentObject);
-// const filePath='.\\file.txt';
-//  updateFile(filePath)
-
-
-
-/**4) Deleting an file using the file path
- * @param {filepath} filepath It take input as an filepath
- */
-
-function deleteFile(filePath){
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log('File deleted successfully');
-  });
-}
-
-// const filePath='.\\file.txt';
-// deleteFile(filePath)
-
-
-
-
-
-
-
-//CRUD operations on records(lines) of the file1)
-
-/** 1) C-Create(append) a new line in the filePath
- * @param {path} filePath It take input as path of file
- * @param {string} content The content that needs to be append 
-*/
-
-function createToFile(filePath, content) {
-    // Convert content to string
-    const contentString = JSON.stringify(content);
-
-    // Append the new line to the file
-    fs.appendFile(filePath, `${contentString}\n`, (err) => {
-        if (err) {
-            console.error('Error appending file:', err);
-            return;
-        }
-        console.log('New line appended to the file successfully.');
-    });
-}
-
-// Example usage:
-// const filePath = '.\\file.txt';
-// const newContent = {
-//     innovapptive: 1536
-// };
-// createToFile(filePath, newContent);
-
-
-/** 2) R-Read a new line in the filePath
- * @param {path} filePath It take input as path of file
- * @param {number} lineNumber It takes the line number 
- * @returns {callback} If error occurs
-*/
-const readline = require('readline');
-
-function readLine(filePath, lineNumber, callback) {
-  const rl = readline.createInterface({
-    input: fs.createReadStream(filePath),
-    crlfDelay: Infinity
-  });
-
-  let lineCount = 0;
-
-  // Listen for the 'line' event, which occurs whenever a new line is read
-  rl.on('line', (line) => {
-    lineCount++;
-
-    // If the current line number matches the desired line number, return it
-    if (lineCount === lineNumber) {
-      rl.close();
-      callback(null, line);
-    }
-  });
-
-  // Listen for the 'close' event, which occurs when the entire file has been read
-  rl.on('close', () => {
-    // If the desired line was not found, return an error
-    if (lineCount < lineNumber) {
-      callback(new Error('Line number exceeds total lines in the file'));
-    }
-  });
-}
-
-// Example usage:
-// const filePath = './file.txt'; // Corrected file path syntax
-// const lineNumber = 1; // Specify the line number to read
-// readLine(filePath, lineNumber, (err, line) => {
-//   if (err) {
-//     console.error(err);
-//     return;
-//   }
-//   console.log(`Line ${lineNumber}: ${line}`);
+// const filePath = 'example.txt';
+// writeFile(filePath, function(err) {
+//     if (err) {
+//         console.error('Error occurred during file creation:', err);
+//     } else {
+//         console.log(`${filePath} has been successfully created.`);
+//     }
 // });
 
 
 
 
-/**3)D- Delete function to delete records in a table
- * @param {path} filePath the file path that has the table
- * @param {number} lineToDelete Line number to be delete
-*/
-function deleteLine(filePath, lineToDelete) {
-    // Read the contents of the file
-    fs.readFile(filePath, 'utf8', (err, data) => {
+/**2)R-Reading the file
+ * @param {path} filePath It takes the filepath as input
+ * @param {function} callback It takes callback function as parameter
+ **/
+function readFile(filePath, callback) {
+    fs.readFile(filePath, 'utf8', function(err, data) {
         if (err) {
             console.error(err);
-            return;
-        }
-
-        // Split the contents into an array of lines
-        let lines = data.split('\n');
-
-        // Remove the line at the specified line number
-        if (lineToDelete > 0 && lineToDelete <= lines.length) {
-            lines.splice(lineToDelete - 1, 1); // Adjusting to 0-based indexing
+            callback(err);
         } else {
-            console.error('Invalid line number');
+            console.log(data);
+            callback(null, data);
+        }
+    });
+}
+
+Example usage:
+const filePath = 'example.txt';
+readFile(filePath, function(err, data) {
+    if (err) {
+        console.error('Error occurred during file reading:', err);
+    } else {
+        console.log(`Content of ${filePath}:`);
+       
+    }
+})
+
+
+
+
+
+/**3) Update a file which is same as updating a line
+ * @param {} filePath It is used to give file path
+ * @param {object} searchObject the search object that needs to be search
+ * @param {object} newContentObject The change new object.
+ */
+function updateTable(folderName, FileName, newContentObject, callback) {
+    const filePath = path.join(folderName, FileName + '.json');
+
+    // Convert the new content object to a JSON string with pretty formatting
+    const contentString = JSON.stringify(newContentObject, null, 2);
+
+    // Write the new content object to the file, replacing the existing content
+    fs.writeFile(filePath, contentString, 'utf8', (writeErr) => {
+        if (writeErr) {
+            console.error('Error writing to file:', writeErr);
+            callback(writeErr);
             return;
         }
 
-        // Write the updated contents back to the file
-        fs.writeFile(filePath, lines.join('\n'), 'utf8', (err) => {
-            if (err) {
-                console.error(err);
+        // Read the updated content from the file
+        fs.readFile(filePath, 'utf8', (readErr, updatedData) => {
+            if (readErr) {
+                console.error('Error reading updated file:', readErr);
+                callback(readErr);
                 return;
             }
-            console.log('Line deleted successfully');
+
+            try {
+                // Parse the updated data as JSON
+                const updatedObject = JSON.parse(updatedData);
+                console.log('Updated content:', updatedObject);
+                callback(null, updatedObject);
+            } catch (parseError) {
+                console.error('Error parsing updated JSON:', parseError);
+                callback(parseError);
+            }
         });
     });
 }
 
-// // Example usage:
-// const filePath5 = '.\\file.txt';
-// const lineToDelete = 1; // Specify the line number to delete
-// deleteLine(filePath5, lineToDelete);
+
+const folderName = 'C:\\Desktop\\aspire';
+const FileName = 'file';
+const newContentObject = {
+    "innovapptive": 1536,
+    "google": 1554,
+    "apple": 54545
+};
+
+updateTable(folderName, FileName, newContentObject, (err, updatedObject) => {
+    if (err) {
+        console.error('Error:', err);
+    } else {
+        console.log('Content replaced successfully.');
+        console.log('Updated JSON structure:', updatedObject);
+    }
+});
 
 
+
+/**4) Deleting an file using the file path
+ * @param {path} filepath It take input as an filepath
+ * @param {function} callback It takes callback function as parameter
+*/
+function deleteFile(filePath, callback) {
+    fs.unlink(filePath, (err) => {
+        if (err) {
+            console.error(err);
+            callback(err);
+            return;
+        }
+        console.log('File deleted successfully');
+        callback(null); // No error, call the callback with null as the error parameter
+    });
+}
+
+const filePath = '.\\example.txt';
+deleteFile(filePath, (err) => {
+    if (err) {
+        console.error('Error:', err);
+    } else {
+        console.log('File deletion completed.');
+    }
+});
+
+
+
+// //CRUD operations on records(lines) of the file1
+
+/** 1) R-Read a new line in the filePath
+ * @param {path} filePath It take input as path of file
+ * @param {key} key It takes the key  
+ * @returns {callback} It takes input as callback function
+ */
+function readLine(filePath, key, callback) {
+    // Read the entire file as a string
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        try {
+            // Parse the JSON content
+            const jsonData = JSON.parse(data);
+
+            // Extract the value associated with the specified key
+            const value = jsonData[key];
+
+            // Check if the key exists in the JSON data
+            if (value === undefined) {
+                callback(new Error(`Key '${key}' not found in JSON data`));
+                return;
+            }
+
+            // Callback with the key-value pair object
+            const result = {};
+            result[key] = value;
+            callback(null, result);
+        } catch (parseError) {
+            callback(parseError);
+        }
+    });
+}
+
+const filePath = './file.json';
+const key = 'innovapptive'; // Specify the key to read
+readLine(filePath, key, (err, obj) => {
+    if (err) {
+        console.error(err);
+        return;
+    }
+    console.log('Object:', obj);
+});
+
+
+
+/**2)D- Delete function to delete records in a table
+ * @param {path} filePath the file path that has the table
+ * @param {object} objectToDelete The object that to be deleted
+ * @param {funciton} callback It takes input as callback function
+*/
+function deleteObject(filePath, objectToDelete, callback) {
+    // Read the contents of the file
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        try {
+            // Parse the JSON content
+            const jsonData = JSON.parse(data);
+
+            // Check if the objectToDelete key exists
+            if (!(objectToDelete in jsonData)) {
+                callback(new Error('Object not found'));
+                return;
+            }
+
+            // Delete the key-value pair from the object
+            delete jsonData[objectToDelete];
+
+            // Write the updated JSON content back to the file
+            fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf8', (writeErr) => {
+                if (writeErr) {
+                    callback(writeErr);
+                    return;
+                }
+                callback(null);
+            });
+        } catch (parseError) {
+            callback(parseError);
+        }
+    });
+}
+
+// Example usage:
+const filePath = './file.json';
+const objectToDelete = "innovapptive"; // Specify the key to delete
+deleteObject(filePath, objectToDelete, (err) => {
+    if (err) {
+        console.error(err);
+    } else {
+        console.log('Object deleted successfully');
+    }
+});
 
